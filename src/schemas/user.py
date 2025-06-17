@@ -8,10 +8,14 @@ class UserRegistration(BaseModel):
 
 class UserInfo(BaseModel):
     id: int
-    email: EmailStr
     full_name: str
     created_at: datetime
 
     class Config:
         from_attributes = True
         orm_mode = True
+
+class UserLoginRequest(BaseModel):
+    email: EmailStr
+    password: constr(min_length=6)
+
