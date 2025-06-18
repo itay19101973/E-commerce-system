@@ -1,4 +1,4 @@
-import logging.config
+
 import os
 
 BACKEND_SERVER_PORT = os.getenv("BACKEND_SERVER_PORT", 8000)
@@ -13,3 +13,4 @@ APP_NAME = "E-commerce app"
 
 
 SQL_ALCHEMY_DB_CONNECTION_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@db:{POSTGRES_PORT}/{POSTGRES_DB}"
+
