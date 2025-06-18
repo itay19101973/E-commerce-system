@@ -3,7 +3,6 @@ import http
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
-from schemas.product import ProductName
 from service.product_service import get_product_by_name
 
 
