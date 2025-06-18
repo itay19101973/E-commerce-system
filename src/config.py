@@ -14,3 +14,4 @@ APP_NAME = "E-commerce app"
 
 SQL_ALCHEMY_DB_CONNECTION_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@db:{POSTGRES_PORT}/{POSTGRES_DB}"
 
+PRODUCT_CSV_PATH = "./data/products.csv"
