@@ -1,5 +1,5 @@
 from datetime import datetime
-from db import get_db_connection
+from database import get_db_connection
 
 db = get_db_connection()
 

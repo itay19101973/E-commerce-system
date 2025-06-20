@@ -3,9 +3,9 @@ from flask import Flask
 from config import SQL_ALCHEMY_DB_CONNECTION_URL, BACKEND_SERVER_PORT , PRODUCT_CSV_PATH
 from routes.users import users_bp
 from routes.products import product_bp
-from db import get_db_connection
+from database import get_db_connection
 from utils.authentication import setup_jwt_authentication
-from utils.product_utils import load_products_from_csv
+from service.csv_parser_service import load_products_from_csv
 
 
 def setup_app():
@@ -35,4 +35,4 @@ def setup_app():
 application = setup_app()
 
 if __name__ == '__main__':
-    application.run(host="0.0.0.0", port=BACKEND_SERVER_PORT)
+    application.run(host="0.0.0.0", port=BACKEND_SERVER_PORT, debug=True)
