@@ -1,13 +1,10 @@
 from pydantic import BaseModel, EmailStr, constr
 
 
-class ProductInfo(BaseModel):
+class CategoryInfo(BaseModel):
     name: str
-    quantity: int
-    category: str
+    products: list[str]
 
     class Config:
         from_attributes = True
         orm_mode = True
-
-

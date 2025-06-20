@@ -4,7 +4,7 @@ from utils.category_utils import add_categories_to_db
 from utils.general import validate_file_path
 from models.product import Product
 from utils.product_utils import validate_product_csv, clean_product_data
-from service.db.product_service import add_products_to_db
+from service.db.product_service import parse_products_df_to_db
 
 
 def load_products_from_csv(csv_file_path):
@@ -31,5 +31,5 @@ def load_products_from_csv(csv_file_path):
 
     # add products and categories to the database
     add_categories_to_db(df)
-    add_products_to_db(df)
+    parse_products_df_to_db(df)
 
