@@ -10,7 +10,7 @@ def validate_product_csv(df):
     :param df: the data frame
     :return: the required columns that needs to be in the product csv file
     """
-    required_columns = ['name', 'quantity', 'category']
+    required_columns = ['name', 'quantity', 'category' , 'price']
     if not all(col in df.columns for col in required_columns):
         print(f"CSV must contain columns: {required_columns}")
         print(f"Found columns: {list(df.columns)}")
@@ -32,6 +32,7 @@ def clean_product_data(df, required_columns):
     df = df.dropna(subset=['quantity'])  # Remove rows with invalid quantities
     df['quantity'] = df['quantity'].astype(int)  # Convert to integer
     df['category'] = df['category'].astype(str)
+    df['price'] = df['price'].astype(int)
     return df
 
 

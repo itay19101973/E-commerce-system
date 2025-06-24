@@ -19,8 +19,8 @@ def handle_get_product_info_by_name():
             return jsonify({"error": "missing name query param"}), http.HTTPStatus.BAD_REQUEST
         product = get_product_by_name(name)
         category_name = get_category_name_by_id(product.id)
-        return jsonify(ProductInfo(name=product.name, quantity=product.quantity,
-                                   category=category_name).dict()), http.HTTPStatus.OK
+        return jsonify(ProductInfo(id=product.id, name=product.name, quantity=product.quantity,
+                                   category=category_name, price=product.price).dict()), http.HTTPStatus.OK
     except ValueError as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.UNPROCESSABLE_ENTITY
     except Exception as e:

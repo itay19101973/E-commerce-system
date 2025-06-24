@@ -1,6 +1,7 @@
 
 from flask import Flask
 from config import SQL_ALCHEMY_DB_CONNECTION_URL, BACKEND_SERVER_PORT , PRODUCT_CSV_PATH
+from routes.order import orders_bp
 from routes.users import users_bp
 from routes.products import product_bp
 from routes.categories import categories_bp
@@ -30,6 +31,7 @@ def setup_app():
     app.register_blueprint(users_bp)
     app.register_blueprint(product_bp)
     app.register_blueprint(categories_bp)
+    app.register_blueprint(orders_bp)
 
     return app
 

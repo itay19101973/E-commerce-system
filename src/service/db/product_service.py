@@ -1,11 +1,7 @@
-import http
 
-from flask import jsonify
 
 from database import get_db_connection
 from models.category import Category
-from schemas.product import ProductInfo
-from schemas.user import UserInfo
 
 from models.product import Product
 
@@ -37,14 +33,14 @@ def parse_products_df_to_db(df):
     # Add products to database
     for _, row in df.iterrows():
         try:
-            add_product_to_db(row['name'], row['quantity'], row['category'], commit=False)
+            add_product_to_db(row['name'], row['quantity'], row['category'], row['price'], commit=False)
         except ValueError as e:
             print(f"error while inserting product to db: {str(e)}")
 
     db.session.commit()
 
 
-def add_product_to_db(name, quantity, category_name, commit=True):
+def add_product_to_db(name, quantity, category_name, price, commit=True):
     existing_product = Product.query.filter_by(name=name).first()
 
     if existing_product:
@@ -59,7 +55,8 @@ def add_product_to_db(name, quantity, category_name, commit=True):
     new_product = Product(
         name=name,
         quantity=quantity,
-        category_id=category.id
+        category_id=category.id,
+        price=price
     )
     db.session.add(new_product)
 
