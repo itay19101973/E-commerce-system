@@ -1,6 +1,7 @@
 from models.category import Category
 from sqlalchemy import select
 from database import get_db_connection
+from models.product import Product
 
 db = get_db_connection()
 
@@ -14,9 +15,30 @@ def get_category_name_by_id(category_id):
     raise ValueError(f"category with id {category_id} doesn't exist.")
 
 
+def get_category_id_by_name(category_name):
+    get_category_id_stmt = select(Category.id).where(Category.name == category_name)
+    result = db.session.execute(get_category_id_stmt).one_or_none()
+    if result:
+        return result[0]
+
+    raise ValueError(f"category with id {category_name} doesn't exist.")
+
 def get_all_categories():
     categories = Category.query.all()
     if not categories:
         raise Exception("failed to fetch the categories from db.")
 
     return categories
+
+
+def get_products_by_category(category_name):
+    category_id = get_category_id_by_name(category_name)
+
+    get_products_by_category_stmt = select(Product.name).where(Product.category_id == category_id)
+    result = db.session.execute(get_products_by_category_stmt).all()
+
+    if result:
+        return result
+
+    raise ValueError(f"error occurred while fetching products from db")
+
