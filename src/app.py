@@ -3,6 +3,7 @@ from flask import Flask
 from config import SQL_ALCHEMY_DB_CONNECTION_URL, BACKEND_SERVER_PORT , PRODUCT_CSV_PATH
 from routes.users import users_bp
 from routes.products import product_bp
+from routes.categories import categories_bp
 from database import get_db_connection
 from utils.authentication import setup_jwt_authentication
 from service.csv_parser_service import load_products_from_csv
@@ -28,6 +29,7 @@ def setup_app():
     # routs
     app.register_blueprint(users_bp)
     app.register_blueprint(product_bp)
+    app.register_blueprint(categories_bp)
 
     return app
 
