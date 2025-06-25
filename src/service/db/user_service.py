@@ -1,12 +1,14 @@
 import http
-
+import re
 from flask import jsonify
 from flask_jwt_extended import create_access_token, create_refresh_token
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from database import get_db_connection
 from models.user import User
-from schemas.user import UserInfo
+from schemas.user import UserInfo, UpdatedUser
+
+db = get_db_connection()
 
 
 def create_user(user_data):
@@ -16,7 +18,6 @@ def create_user(user_data):
         full_name=user_data.full_name
     )
     try:
-        db = get_db_connection()
         db.session.add(user)
         db.session.commit()
         return jsonify(UserInfo.from_orm(user).dict()), http.HTTPStatus.CREATED
@@ -40,5 +41,29 @@ def login_user(login_data):
     }), http.HTTPStatus.OK
 
 
+def find_user_by_id(user_id):
+    return User.query.filter_by(id=user_id).first()
 
 
+def update_user(input_data):
+    user = find_user_by_id(input_data.id)
+    if not user:
+        raise ValueError("User not found")
+
+    if input_data.email:
+        user.email = input_data.email
+
+    if input_data.password:
+        user.password_hash = generate_password_hash(input_data.password)
+
+    if input_data.full_name:
+        user.full_name = input_data.full_name
+
+    db.session.commit()
+
+    return UpdatedUser(
+        id=user.id,
+        full_name=user.full_name,
+        email=user.email,
+        updated_at=user.updated_at
+    )
