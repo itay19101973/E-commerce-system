@@ -23,6 +23,7 @@ def get_category_id_by_name(category_name):
 
     raise ValueError(f"category with id {category_name} doesn't exist.")
 
+
 def get_all_categories():
     categories = Category.query.all()
     if not categories:
@@ -41,4 +42,3 @@ def get_products_by_category(category_name):
         return result
 
     raise ValueError(f"error occurred while fetching products from db")
-

@@ -67,3 +67,9 @@ def update_user(input_data):
         email=user.email,
         updated_at=user.updated_at
     )
+
+
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    db.session.delete(user)
+    db.session.commit()

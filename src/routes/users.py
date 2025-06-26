@@ -6,7 +6,7 @@ from schemas.user import UserRegistration, UserLoginRequest, UserUpdateInput
 from pydantic import ValidationError
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
-from service.db.user_service import create_user, login_user, update_user
+from service.db.user_service import create_user, login_user, update_user, delete_user
 from utils.authentication import revoke_jwt_token
 
 users_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -43,7 +43,7 @@ def refresh_user_token():
 
 
 @users_bp.route('/logout', methods=['POST'])
-@jwt_required(refresh=True)
+@jwt_required()
 def handle_user_logout():
     revoke_jwt_token()
     return jsonify({"msg": "Refresh token revoked, logged out"}), http.HTTPStatus.OK
@@ -64,3 +64,19 @@ def handle_update_user():
 
     except Exception:
         return jsonify({"error": "Failed to update user"}), http.HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@users_bp.route('/delete', methods=['DELETE'])
+@jwt_required()
+def handle_delete_user():
+    user_id = get_jwt_identity()
+    try:
+        delete_user(user_id)
+        return jsonify({"msg": "user deleted successfully."}), http.HTTPStatus.OK
+    except Exception as e:
+        return jsonify({"error": f"couldn't delete user {user_id}."}), http.HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+
+
+
