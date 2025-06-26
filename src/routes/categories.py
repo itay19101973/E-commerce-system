@@ -4,7 +4,7 @@ from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
 from schemas.category import CategoryInfo
-from service.db.category_service import get_all_categories, get_products_by_category
+from service.db.category_service import get_all_categories, get_products_by_category, update_category_name
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
@@ -32,3 +32,18 @@ def handle_get_products_by_category(category_name):
 
     except Exception as e:
         return jsonify({"errors": str(e)}), http.HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@categories_bp.route('/update', methods=['PUT'])
+def handle_update_category_name():
+    current_category_name = request.json.get("old_category_name")
+    new_category_name = request.json.get("new_category_name")
+    if not new_category_name or not current_category_name:
+        return jsonify({"error": "missing request arguments."}), http.HTTPStatus.BAD_REQUEST
+    try:
+        update_category_name(current_category_name, new_category_name)
+        return jsonify({"msg": "Category updated successfully."}), http.HTTPStatus.OK
+    except ValueError as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
+    except Exception as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.INTERNAL_SERVER_ERROR

@@ -42,3 +42,12 @@ def get_products_by_category(category_name):
         return result
 
     raise ValueError(f"error occurred while fetching products from db")
+
+
+def update_category_name(current_category_name, new_category_name):
+    category = Category.query.filter_by(name=current_category_name).first()
+    if not category:
+        raise ValueError("invalid category name given, category to change wasn't found.")
+
+    category.name = new_category_name
+    db.session.commit()
