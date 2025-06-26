@@ -26,9 +26,9 @@ class UserLoginRequest(BaseModel):
 
 class UserUpdateInput(BaseModel):
     id: int
-    email: Optional[EmailStr]
-    password: Optional[constr(min_length=6)]
-    full_name: Optional[str]
+    email: Optional[EmailStr] = None
+    password: Optional[constr(min_length=6)] = None
+    full_name: Optional[str] = None
 
 
 class UpdatedUser(BaseModel):

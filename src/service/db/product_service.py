@@ -75,3 +75,38 @@ def remove_product(product_id, commit=True):
 
     if commit:
         db.session.commit()
+
+
+def update_product(new_product_details):
+    product = Product.query.filter_by(id=new_product_details.id).first()
+    if not product:
+        raise ValueError("product to edit wasn't found.")
+
+    if new_product_details.name:
+        product.name = new_product_details.name
+
+    if new_product_details.price:
+        if new_product_details.price > 0:
+            product.price = new_product_details.price
+        else:
+            raise ValueError("product price must be > 0")
+
+    if new_product_details.quantity:
+        if new_product_details.quantity >= 0:
+            product.quantity = new_product_details.quantity
+        else:
+            raise ValueError("product quantity must be >= 0")
+
+    if new_product_details.category:
+        category = Category.query.filter_by(name=new_product_details.category).first()
+        if not category:
+            category = Category(name=new_product_details.category)
+            db.session.add(category)
+            db.session.flush()
+        product.category_id = category.id
+
+    db.session.commit()
+    return product
+
+
+

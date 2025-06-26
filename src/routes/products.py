@@ -3,9 +3,9 @@ import http
 from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
-from schemas.product import ProductInfo
+from schemas.product import ProductInfo, UpdateProduct
 from service.db.category_service import get_category_name_by_id
-from service.db.product_service import get_product_by_name, add_product_to_db, remove_product
+from service.db.product_service import get_product_by_name, add_product_to_db, remove_product, update_product
 
 product_bp = Blueprint('products', __name__, url_prefix='/products')
 
@@ -32,10 +32,9 @@ def handle_get_product_info_by_name():
 def handle_add_product():
     try:
         product_data = ProductInfo(**request.json)
+        return jsonify({"id": add_product_to_db(**product_data.dict()).id}), http.HTTPStatus.CREATED
     except ValidationError as e:
-        return jsonify({"errors": e.errors()}), http.HTTPStatus.BAD_REQUEST
-
-    return jsonify({"id": add_product_to_db(**product_data.dict()).id}), http.HTTPStatus.CREATED
+        return jsonify({"error": e.errors()}), http.HTTPStatus.BAD_REQUEST
 
 
 @product_bp.route('/remove', methods=['DELETE'])
@@ -50,13 +49,26 @@ def handle_remove_product_by_id():
 
     try:
         remove_product(product_id)
+        return jsonify({"msg": "product deleted", "success": True}), http.HTTPStatus.OK
     except ValueError as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
 
-    return jsonify({"msg": "product deleted", "success": True}), http.HTTPStatus.OK
 
+@product_bp.route('/update', methods=['PUT'])
+def handle_update_product_details():
+    try:
+        new_product_details = UpdateProduct(**request.json)
+        if not new_product_details.name and not new_product_details.quantity and not new_product_details.category \
+                and not new_product_details.price:
+            return jsonify({"msg": "nothing to change."}), http.HTTPStatus.OK
 
+        new_product = update_product(new_product_details)
 
+        return jsonify(new_product.to_dict()), http.HTTPStatus.OK
 
-
-
+    except ValidationError as e:
+        return jsonify({"error": e.errors()}), http.HTTPStatus.BAD_REQUEST
+    except ValueError as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
+    except Exception as e:
+        return jsonify({"error": "couldn't update product."}), http.HTTPStatus.INTERNAL_SERVER_ERROR
