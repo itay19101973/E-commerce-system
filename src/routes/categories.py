@@ -4,7 +4,8 @@ from flask import Blueprint, request, jsonify
 from pydantic import ValidationError
 
 from schemas.category import CategoryInfo
-from service.db.category_service import get_all_categories, get_products_by_category, update_category_name
+from service.db.category_service import get_all_categories, get_products_by_category, update_category_name, \
+    delete_category
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
@@ -44,6 +45,21 @@ def handle_update_category_name():
         update_category_name(current_category_name, new_category_name)
         return jsonify({"msg": "Category updated successfully."}), http.HTTPStatus.OK
     except ValueError as e:
-        return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
+        return jsonify({"error": str(e)}), http.HTTPStatus.NOT_FOUND
     except Exception as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@categories_bp.route('/delete', methods=['DELETE'])
+def handle_delete_category():
+    category_to_delete = request.json.get("category_to_delete")
+    if not category_to_delete:
+        return jsonify({"error": "missing request argument."}), http.HTTPStatus.BAD_REQUEST
+
+    try:
+        delete_category(category_to_delete)
+        return jsonify({"msg": "category was deleted successfully."}), http.HTTPStatus.OK
+    except ValueError as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.NOT_FOUND
+    except Exception as e:
+        return jsonify({"error": "couldn't delete category"}), http.HTTPStatus.INTERNAL_SERVER_ERROR

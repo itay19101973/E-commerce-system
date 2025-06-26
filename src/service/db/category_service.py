@@ -51,3 +51,12 @@ def update_category_name(current_category_name, new_category_name):
 
     category.name = new_category_name
     db.session.commit()
+
+
+def delete_category(category_to_delete):
+    category = Category.query.filter_by(name=category_to_delete).first()
+    if not category:
+        raise ValueError("category wasn't found")
+
+    db.session.delete(category)
+    db.session.commit()
