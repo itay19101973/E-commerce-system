@@ -1,7 +1,7 @@
-from flask import jsonify
+
+from flask_jwt_extended import get_jwt_identity
 
 from database import get_db_connection
-from models.category import Category
 from models.order import Order, OrderItem
 
 from models.product import Product
@@ -27,7 +27,7 @@ def create_order(order):
     if len(order.items) == 0:
         raise ValueError("no items in order")
 
-    new_order = Order(user_id=order.user_id)
+    new_order = Order(user_id=get_jwt_identity())
 
     db.session.add(new_order)
     db.session.flush()

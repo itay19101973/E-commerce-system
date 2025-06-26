@@ -1,6 +1,7 @@
 import http
 
 from flask import Blueprint, request, jsonify
+from flask_jwt_extended import jwt_required
 from pydantic import ValidationError
 
 from schemas.order import CreateOrder
@@ -10,6 +11,7 @@ orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
 
 @orders_bp.route('/', methods=['POST'])
+@jwt_required()
 def handle_create_order():
     try:
         order = CreateOrder(**request.json)

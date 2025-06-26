@@ -7,5 +7,4 @@ class AddOrderItem(BaseModel):
 
 
 class CreateOrder(BaseModel):
-    user_id: int
     items: list[AddOrderItem]
