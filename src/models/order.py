@@ -5,6 +5,16 @@ db = get_db_connection()
 
 
 class OrderItem(db.Model):
+    """
+    Represents an item in an order, linking products to orders.
+
+    Attributes:
+        order_id (int): Foreign key to Order, part of composite primary key.
+        product_id (int): Foreign key to Product, part of composite primary key.
+        quantity (int): Quantity of the product in the order.
+        unit_price (float): Price per unit at time of order.
+        product (Product): Relationship to the Product model.
+    """
     __tablename__ = 'order_item'
     order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), primary_key=True)
@@ -15,6 +25,15 @@ class OrderItem(db.Model):
 
 
 class Order(db.Model):
+    """
+    Represents a user order.
+
+    Attributes:
+        id (int): Primary key.
+        created_at (datetime): Timestamp when the order was created.
+        items (List[OrderItem]): List of OrderItem instances in this order.
+        user_id (int): Foreign key to the User who placed the order.
+    """
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)

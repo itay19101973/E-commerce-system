@@ -5,6 +5,18 @@ db = get_db_connection()
 
 
 class Product(db.Model):
+    """
+    Represents a product in the inventory.
+
+    Attributes:
+        id (int): Primary key.
+        name (str): Unique product name.
+        quantity (int): Available quantity.
+        price (int): Price of the product.
+        category_id (int): Foreign key to Category.
+        created_at (datetime): Creation timestamp.
+        updated_at (datetime): Last updated timestamp.
+    """
     __tablename__ = 'products'
 
     id = db.Column(db.Integer, primary_key=True)

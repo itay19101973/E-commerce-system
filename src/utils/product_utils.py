@@ -1,16 +1,15 @@
-from database import get_db_connection
+from typing import List
+
 import pandas as pd
-from utils.general import validate_file_path
-from models.product import Product
 
 
-def validate_product_csv(df):
+def validate_product_csv(df: pd.DataFrame) -> List[str]:
     """
     checks if the product csv has the required colons and if so returns them
     :param df: the data frame
     :return: the required columns that needs to be in the product csv file
     """
-    required_columns = ['name', 'quantity', 'category' , 'price']
+    required_columns = ['name', 'quantity', 'category', 'price']
     if not all(col in df.columns for col in required_columns):
         print(f"CSV must contain columns: {required_columns}")
         print(f"Found columns: {list(df.columns)}")
@@ -18,7 +17,7 @@ def validate_product_csv(df):
     return required_columns
 
 
-def clean_product_data(df, required_columns):
+def clean_product_data(df: pd.DataFrame, required_columns: List[str]) -> pd.DataFrame:
     """
     Cleans and validates a DataFrame containing product data.
 
@@ -34,6 +33,3 @@ def clean_product_data(df, required_columns):
     df['category'] = df['category'].astype(str)
     df['price'] = df['price'].astype(int)
     return df
-
-
-

@@ -1,6 +1,5 @@
-
 from flask import Flask
-from config import SQL_ALCHEMY_DB_CONNECTION_URL, BACKEND_SERVER_PORT , PRODUCT_CSV_PATH
+from config import SQL_ALCHEMY_DB_CONNECTION_URL, BACKEND_SERVER_PORT, PRODUCT_CSV_PATH
 from routes.order import orders_bp
 from routes.users import users_bp
 from routes.products import product_bp
@@ -23,9 +22,6 @@ def setup_app():
 
     # for session managing
     setup_jwt_authentication(app)
-
-    # load products from csv file
-
 
     # routs
     app.register_blueprint(users_bp)

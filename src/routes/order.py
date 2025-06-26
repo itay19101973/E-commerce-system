@@ -13,6 +13,16 @@ orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
 @orders_bp.route('/', methods=['POST'])
 @jwt_required()
 def handle_create_order():
+    """
+    Handle order creation request.
+
+    Parses and validates the incoming JSON request using the CreateOrder schema.
+    Then creates the order in the database.
+
+    Returns:
+        - HTTP 201 with the created order ID on success.
+        - HTTP 400 with validation error details on failure.
+    """
     try:
         order = CreateOrder(**request.json)
         new_order = create_order(order)

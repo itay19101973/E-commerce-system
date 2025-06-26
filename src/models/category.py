@@ -5,6 +5,14 @@ db = get_db_connection()
 
 
 class Category(db.Model):
+    """
+    Represents a product category.
+
+    Attributes:
+        id (int): Primary key identifier for the category.
+        name (str): Unique name of the category.
+        products (List[Product]): List of associated Product objects.
+    """
     __tablename__ = 'categories'
 
     id = db.Column(db.Integer, primary_key=True)

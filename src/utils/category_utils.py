@@ -1,8 +1,10 @@
+import pandas as pd
+
 from database import get_db_connection
 from models.category import Category
 
 
-def add_categories_to_db(df):
+def add_categories_to_db(df: pd.DataFrame) -> None:
     """
     Adds or updates categories in the database from a cleaned DataFrame.
 

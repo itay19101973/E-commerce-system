@@ -5,11 +5,25 @@ from database import get_db_connection
 from models.order import Order, OrderItem
 
 from models.product import Product
+from schemas.order import AddOrderItem, CreateOrder
 
 db = get_db_connection()
 
 
-def add_order_item_to_db(item, new_order):
+def add_order_item_to_db(item: AddOrderItem, new_order: Order) -> None:
+    """
+    Adds an order item to the database based on the product and order provided.
+
+    Args:
+        item: An object containing product_id and quantity.
+        new_order: The order to which this item belongs.
+
+    Raises:
+        ValueError: If the product with the given ID is not found.
+
+    Returns:
+        None
+    """
     product = Product.query.get(item.product_id)
     if not product:
         raise ValueError(f"Product with ID {item.product_id} not found")
@@ -23,7 +37,19 @@ def add_order_item_to_db(item, new_order):
     db.session.add(order_item)
 
 
-def create_order(order):
+def create_order(order: CreateOrder) -> Order:
+    """
+    Creates a new order and adds the associated order items to the database.
+
+    Args:
+        order: An object with an `items` attribute (list of items with product_id and quantity).
+
+    Raises:
+        ValueError: If the order has no items.
+
+    Returns:
+        Order: The newly created order instance.
+    """
     if len(order.items) == 0:
         raise ValueError("no items in order")
 

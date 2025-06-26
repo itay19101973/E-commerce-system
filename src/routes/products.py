@@ -12,6 +12,12 @@ product_bp = Blueprint('products', __name__, url_prefix='/products')
 
 @product_bp.route('/', methods=['GET'])
 def handle_get_product_info_by_name():
+    """
+    Handle request to get product information by name.
+
+    Returns:
+        JSON response with product info or error message.
+    """
     try:
 
         name = request.args.get("name")
@@ -30,6 +36,12 @@ def handle_get_product_info_by_name():
 
 @product_bp.route('/add', methods=['POST'])
 def handle_add_product():
+    """
+    Handle request to add a new product.
+
+    Returns:
+        JSON response with new product ID or validation error.
+    """
     try:
         product_data = ProductInfo(**request.json)
         return jsonify({"id": add_product_to_db(**product_data.dict()).id}), http.HTTPStatus.CREATED
@@ -39,6 +51,12 @@ def handle_add_product():
 
 @product_bp.route('/remove', methods=['DELETE'])
 def handle_remove_product_by_id():
+    """
+    Handle request to remove a product by ID.
+
+    Returns:
+        JSON response with confirmation or error message.
+    """
     product_id = request.args.get("id")
 
     # Check for missing or non-integer value
@@ -56,10 +74,18 @@ def handle_remove_product_by_id():
 
 @product_bp.route('/update', methods=['PUT'])
 def handle_update_product_details():
+    """
+    Handle request to update product details.
+
+    Returns:
+        JSON response with updated product or error message.
+    """
     try:
         new_product_details = UpdateProduct(**request.json)
-        if not new_product_details.name and not new_product_details.quantity and not new_product_details.category \
-                and not new_product_details.price:
+        if not any([new_product_details.name,
+                    new_product_details.quantity,
+                    new_product_details.category,
+                    new_product_details.price]):
             return jsonify({"msg": "nothing to change."}), http.HTTPStatus.OK
 
         new_product = update_product(new_product_details)

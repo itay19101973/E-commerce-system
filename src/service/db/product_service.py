@@ -1,14 +1,27 @@
-
+import pandas as pd
 
 from database import get_db_connection
 from models.category import Category
 
 from models.product import Product
+from schemas.product import UpdateProduct
 
 db = get_db_connection()
 
 
-def get_product_by_name(product_name):
+def get_product_by_name(product_name: str) -> Product:
+    """
+    Retrieve a product by its name.
+
+    Args:
+        product_name: The name of the product to find.
+
+    Raises:
+        ValueError: If no product with the given name exists.
+
+    Returns:
+        Product: The found product instance.
+    """
     product = Product.query.filter_by(name=product_name).first()
 
     if not product:
@@ -17,19 +30,19 @@ def get_product_by_name(product_name):
     return product
 
 
-def parse_products_df_to_db(df):
+def parse_products_df_to_db(df: pd.DataFrame) -> None:
     """
-    Adds or updates products in the database from a cleaned DataFrame.
+    Add or update products in the database from a cleaned DataFrame.
 
-    For each row in the DataFrame:
-    - If a product with the same name already exists in the database, its quantity is updated (increased).
-    - If the product does not exist, a new product record is created and added.
+    For each row:
+    - Attempts to add the product. If a duplicate name is found, logs the error.
 
-    :param df: pandas.DataFrame containing product data.
-               Expected columns: 'name' (str), 'quantity' (int).
-    :return: None
+    Args:
+        df: pandas DataFrame with columns: 'name', 'quantity', 'category', 'price'.
+
+    Returns:
+        None
     """
-
     # Add products to database
     for _, row in df.iterrows():
         try:
@@ -40,7 +53,23 @@ def parse_products_df_to_db(df):
     db.session.commit()
 
 
-def add_product_to_db(name, quantity, category_name, price, commit=True):
+def add_product_to_db(name: str, quantity: int, category_name: str, price: int, commit: bool = True) -> Product:
+    """
+    Add a new product to the database.
+
+    Args:
+        name: Product name.
+        quantity: Quantity of the product.
+        category_name: Category name for the product.
+        price: Price of the product.
+        commit: Whether to commit the transaction immediately.
+
+    Raises:
+        ValueError: If product name already exists or category does not exist.
+
+    Returns:
+        Product: The newly created product instance.
+    """
     existing_product = Product.query.filter_by(name=name).first()
 
     if existing_product:
@@ -66,7 +95,20 @@ def add_product_to_db(name, quantity, category_name, price, commit=True):
     return new_product
 
 
-def remove_product(product_id, commit=True):
+def remove_product(product_id: int, commit: bool = True) -> None:
+    """
+    Remove a product by its ID.
+
+    Args:
+        product_id: The ID of the product to remove.
+        commit: Whether to commit the transaction immediately.
+
+    Raises:
+        ValueError: If the product with given ID does not exist.
+
+    Returns:
+        None
+    """
     product = Product.query.get(product_id)
     if not product:
         raise ValueError(f"product with id :{product_id} doesnt exist.")
@@ -77,7 +119,19 @@ def remove_product(product_id, commit=True):
         db.session.commit()
 
 
-def update_product(new_product_details):
+def update_product(new_product_details: UpdateProduct) -> Product:
+    """
+    Update an existing product's details.
+
+    Args:
+        new_product_details: An object with attributes id, name, price, quantity, category.
+
+    Raises:
+        ValueError: If the product to edit is not found or if price/quantity values are invalid.
+
+    Returns:
+        Product: The updated product instance.
+    """
     product = Product.query.filter_by(id=new_product_details.id).first()
     if not product:
         raise ValueError("product to edit wasn't found.")
