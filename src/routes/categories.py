@@ -1,9 +1,6 @@
 import http
 
 from flask import Blueprint, request, jsonify
-from pydantic import ValidationError
-
-from schemas.category import CategoryInfo
 from service.db.category_service import get_all_categories, get_products_by_category, update_category_name, \
     delete_category
 
@@ -34,12 +31,21 @@ def handle_get_products_by_category(category_name):
     Get all product names belonging to a given category.
 
     Args:
-        category_name (str): Name of the category.
+        category_name (str): Provided via URL path parameter.
 
     Returns:
-        JSON with products list and HTTP 200 status,
-        or HTTP 400 if category_name is missing,
-        or HTTP 500 on failure.
+        - HTTP 200 OK:
+            {
+                "<category_name>": [<product_name>, ...]
+            }
+        - HTTP 400 Bad Request:
+            {
+                "error": "missing 'category' argument."
+            }
+        - HTTP 500 Internal Server Error:
+            {
+                "errors": "<error_message>"
+            }
     """
     if not category_name:
 
@@ -105,5 +111,5 @@ def handle_delete_category():
         return jsonify({"msg": "category was deleted successfully."}), http.HTTPStatus.OK
     except ValueError as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.NOT_FOUND
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "couldn't delete category"}), http.HTTPStatus.INTERNAL_SERVER_ERROR

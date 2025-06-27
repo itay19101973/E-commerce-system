@@ -166,7 +166,7 @@ def execute_order(order_id: int, user_id: int) -> Dict[str, Any]:
     return {"items": order_details, "total_price": price}
 
 
-def update_order(order_details: UpdateOrderInput, user_id: int):
+def update_order(order_details: UpdateOrderInput, user_id: int) -> OrderInfo:
     """
     Update an existing order's items, replacing them with the given ones.
 
@@ -215,7 +215,21 @@ def update_order(order_details: UpdateOrderInput, user_id: int):
         raise BadRequest("Database error occurred during order update")
 
 
-def delete_order(order_id: int, user_id: int):
+def delete_order(order_id: int, user_id: int) -> None:
+    """
+    Deletes an existing order if it belongs to the given user.
+
+    Args:
+        order_id (int): The ID of the order to delete.
+        user_id (int): The ID of the user requesting the deletion.
+
+    Raises:
+        BadRequest: If the order does not exist or the user is not the owner.
+
+    Behavior:
+        - If the order exists and belongs to the user, it is removed from the database.
+        - Commits the transaction to persist the deletion.
+    """
     order = Order.query.filter_by(id=order_id).first()
     if not order:
         raise BadRequest(f"There is no order with id {order_id}")

@@ -29,7 +29,7 @@ def handle_get_product_info_by_name():
                                    category=category_name, price=product.price).dict()), http.HTTPStatus.OK
     except ValueError as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.UNPROCESSABLE_ENTITY
-    except Exception as e:
+    except Exception:
         return jsonify(
             {"error": "couldn't get the product info due to an internal error."}), http.HTTPStatus.INTERNAL_SERVER_ERROR
 
@@ -39,8 +39,25 @@ def handle_add_product():
     """
     Handle request to add a new product.
 
+    Expects:
+        JSON body conforming to ProductInfo schema:
+        {
+            "id": int,
+            "name": str,
+            "quantity": int,
+            "category": str,
+            "price": int
+        }
+
     Returns:
-        JSON response with new product ID or validation error.
+        - HTTP 201 Created:
+            {
+                "id": <new_product_id>
+            }
+        - HTTP 400 Bad Request:
+            {
+                "error": <validation_errors>
+            }
     """
     try:
         product_data = ProductInfo(**request.json)
@@ -54,8 +71,20 @@ def handle_remove_product_by_id():
     """
     Handle request to remove a product by ID.
 
+    Expects:
+        Query parameter:
+            /remove?id=<product_id>
+
     Returns:
-        JSON response with confirmation or error message.
+        - HTTP 200 OK:
+            {
+                "msg": "product deleted",
+                "success": true
+            }
+        - HTTP 400 Bad Request:
+            {
+                "error": "Invalid or missing 'id' parameter"
+            }
     """
     product_id = request.args.get("id")
 
@@ -77,8 +106,35 @@ def handle_update_product_details():
     """
     Handle request to update product details.
 
+    Expects:
+        JSON body conforming to UpdateProduct schema:
+        {
+            "id": int,
+            "name": Optional[str],
+            "quantity": Optional[int],
+            "category": Optional[str],
+            "price": Optional[int]
+        }
+
+        At least one of the fields (name, quantity, category, price) must be provided.
+
     Returns:
-        JSON response with updated product or error message.
+        - HTTP 200 OK:
+            {
+                "id": int,
+                "name": str,
+                "quantity": int,
+                "category": str,
+                "price": int
+            }
+        - HTTP 400 Bad Request:
+            {
+                "error": <validation or logic error>
+            }
+        - HTTP 500 Internal Server Error:
+            {
+                "error": "couldn't update product."
+            }
     """
     try:
         new_product_details = UpdateProduct(**request.json)
@@ -96,5 +152,5 @@ def handle_update_product_details():
         return jsonify({"error": e.errors()}), http.HTTPStatus.BAD_REQUEST
     except ValueError as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "couldn't update product."}), http.HTTPStatus.INTERNAL_SERVER_ERROR

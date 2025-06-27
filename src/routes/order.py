@@ -15,14 +15,33 @@ orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
 @jwt_required()
 def handle_create_order():
     """
-    Handle order creation request.
+    Create a new order for the authenticated user.
 
-    Parses and validates the incoming JSON request using the CreateOrder schema.
-    Then creates the order in the database.
+    Expects:
+        JSON payload matching the CreateOrder schema:
+        {
+            "user_id": int,
+            "items": [
+                {
+                    "product_id": int,
+                    "quantity": int
+                },
+                ...
+            ]
+        }
+
+    Requires:
+        - A valid JWT token in the Authorization header.
 
     Returns:
-        - HTTP 201 with the created order ID on success.
-        - HTTP 400 with validation error details on failure.
+        - HTTP 201 Created:
+            {
+                "id": <new_order_id>
+            }
+        - HTTP 400 Bad Request:
+            {
+                "errors": <validation_errors>
+            }
     """
     try:
         order = CreateOrder(**request.json)
@@ -37,19 +56,38 @@ def handle_create_order():
 @jwt_required()
 def handle_get_user_order():
     """
-    Handle GET request to retrieve all orders for the authenticated user.
+    Retrieve all orders for the authenticated user.
 
     Requires:
-        A valid JWT token in the Authorization header.
+        - A valid JWT token in the Authorization header.
 
     Returns:
-        JSON response containing:
-            - "user": The authenticated user's ID.
-            - "orders": A list of the user's orders in dictionary format.
-        HTTP 200 OK on success.
+        - HTTP 200 OK:
+            {
+                "user": "<user_id>",
+                "orders": [
+                    {
+                        "id": int,
+                        "created_at": str (ISO 8601 datetime),
+                        "executed": bool,
+                        "items": [
+                            {
+                                "product_id": int,
+                                "product_name": str,
+                                "quantity": int,
+                                "unit_price": float
+                            },
+                            ...
+                        ]
+                    },
+                    ...
+                ]
+            }
 
-    Error Handling:
-        Returns JSON error message with a generic failure note if an exception occurs.
+        - HTTP 500 Internal Server Error:
+            {
+                "error": "failed to get orders for user <user_id>"
+            }
     """
     user_id = get_jwt_identity()
     try:
@@ -62,6 +100,24 @@ def handle_get_user_order():
 @orders_bp.route('/execute', methods=['POST'])
 @jwt_required()
 def handle_execute_order():
+    """
+    Executes a given order for the authenticated user.
+
+    Expects:
+        JSON payload with the order ID:
+        {
+            "id": <order_id: int>
+        }
+
+    Requires:
+        JWT-authenticated user.
+
+    Returns:
+        200 OK: If the order is successfully executed.
+        400 Bad Request: If the order is not found, not owned by the user, already executed, or database error.
+        422 Unprocessable Entity: If input validation fails.
+        500 Internal Server Error: On unexpected errors.
+    """
     user_id = int(get_jwt_identity())
     try:
         order = ExecuteOrder(**request.json)
@@ -83,6 +139,24 @@ def handle_execute_order():
 @orders_bp.route('/update', methods=['POST'])
 @jwt_required()
 def handle_update_order():
+    """
+    Updates an existing order with new items for the authenticated user.
+
+    Expects:
+        JSON payload with order ID and list of new items:
+        {
+            "id": <order_id: int>,
+            "items": [{"product_id": int, "quantity": int}, ...]
+        }
+
+    Requires:
+        JWT-authenticated user.
+
+    Returns:
+        200 OK: If the order is successfully updated.
+        400 Bad Request: If validation fails or order is invalid.
+        500 Internal Server Error: On unexpected errors.
+    """
     try:
         order_details = UpdateOrderInput(**request.json)
         user_id = int(get_jwt_identity())
@@ -103,6 +177,23 @@ def handle_update_order():
 @orders_bp.route('/delete', methods=['DELETE'])
 @jwt_required()
 def handle_delete_order():
+    """
+    Deletes an order by ID for the authenticated user.
+
+    Expects:
+        JSON payload with the order ID:
+        {
+            "id": <order_id: int>
+        }
+
+    Requires:
+        JWT-authenticated user.
+
+    Returns:
+        200 OK: If the order is successfully deleted.
+        400 Bad Request: If validation fails or deletion is not allowed.
+        500 Internal Server Error: On unexpected errors.
+    """
     try:
         order_id = DeleteOrderInput(**request.json).id
         user_id = int(get_jwt_identity())
