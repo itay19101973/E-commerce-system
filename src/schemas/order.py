@@ -21,3 +21,7 @@ class CreateOrder(BaseModel):
         items: A list of products and their quantities to be included in the order.
     """
     items: list[AddOrderItem]
+
+
+class ExecuteOrder(BaseModel):
+    id: int

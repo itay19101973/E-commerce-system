@@ -3,9 +3,10 @@ import http
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from pydantic import ValidationError
+from werkzeug.exceptions import BadRequest
 
-from schemas.order import CreateOrder
-from service.db.order_service import create_order, get_user_orders
+from schemas.order import CreateOrder, ExecuteOrder
+from service.db.order_service import create_order, get_user_orders, execute_order
 
 orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
@@ -54,4 +55,24 @@ def handle_get_user_order():
         orders = get_user_orders(user_id)
         return jsonify({"user": f"{user_id}", "orders": orders}), http.HTTPStatus.OK
     except Exception as e:
-        return jsonify({"error": f"failed to get orders for user{user_id}"})
+        return jsonify({"error": f"failed to get orders for user {user_id}"})
+
+
+@orders_bp.route('/execute', methods=['POST'])
+@jwt_required()
+def handle_execute_order():
+    user_id = int(get_jwt_identity())
+    try:
+        order = ExecuteOrder(**request.json)
+        order_id = order.id
+        order_details = execute_order(order_id, user_id)
+        return (jsonify({"msg": f"order {order_id} executed successfully.", "details": f"{order_details}"}),
+                http.HTTPStatus.OK)
+    except ValidationError as ve:
+        return jsonify({"error": ve.errors()}), http.HTTPStatus.BAD_REQUEST
+    except BadRequest as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
+    except ValueError as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
+    except Exception as e:
+        return jsonify({"error": "cant execute order, try again later."}), http.HTTPStatus.INTERNAL_SERVER_ERROR
