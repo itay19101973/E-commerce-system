@@ -8,7 +8,7 @@ from database import get_db_connection
 from models.order import Order, OrderItem
 
 from models.product import Product
-from schemas.order import AddOrderItem, CreateOrder
+from schemas.order import AddOrderItem, CreateOrder, OrderItemInfo, OrderInfo, UpdateOrderInput
 
 db = get_db_connection()
 
@@ -102,7 +102,8 @@ def update_quantities(order: Order) -> None:
             if product.quantity >= item.quantity:
                 product.quantity -= item.quantity
             else:
-                raise ValueError(f"cant execute order, asked for {item.quantity} of {product.name} but storage has less.")
+                raise ValueError(
+                    f"cant execute order, asked for {item.quantity} of {product.name} but storage has less.")
 
         db.session.commit()
     except SQLAlchemyError as e:
@@ -163,3 +164,52 @@ def execute_order(order_id: int, user_id: int) -> Dict[str, Any]:
     order_details = [{item.product.name: item.quantity} for item in order_items]
 
     return {"items": order_details, "total_price": price}
+
+
+def update_order(order_details: UpdateOrderInput, user_id: int):
+    """
+    Update an existing order's items, replacing them with the given ones.
+
+    Args:
+        order_details (UpdateOrder): The order update request, containing id and items.
+        user_id (int): The ID of the user attempting the update.
+
+    Returns:
+        OrderInfo: The updated order info including order id and list of items.
+
+    Raises:
+        BadRequest: If order not found, user mismatch, no items provided, or DB error occurs.
+    """
+    order = Order.query.filter_by(id=order_details.id).first()
+    if not order:
+        raise BadRequest(f"There is no order with id {order_details.id}")
+
+    if order.user_id != user_id:
+        raise BadRequest("User cannot update orders that do not belong to them.")
+
+    if len(order_details.items) == 0:
+        raise BadRequest("No items given to update.")
+
+    if order.executed:
+        raise BadRequest("cant update order that already executed.")
+
+    try:
+
+        OrderItem.query.filter_by(order_id=order_details.id).delete()
+
+        for item in order_details.items:
+            add_order_item_to_db(item, order)
+
+        db.session.commit()
+        updated_items = OrderItem.query.filter_by(order_id=order.id).all()
+
+        updated_items = [
+            OrderItemInfo(name=item.product.name, quantity=item.quantity)
+            for item in updated_items
+        ]
+
+        return OrderInfo(id=order.id, items=updated_items)
+
+    except SQLAlchemyError:
+        db.session.rollback()
+        raise BadRequest("Database error occurred during order update")

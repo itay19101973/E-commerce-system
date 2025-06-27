@@ -31,3 +31,26 @@ class ExecuteOrder(BaseModel):
         id (int): The ID of the order to be executed.
     """
     id: int
+
+
+class UpdateOrderInput(BaseModel):
+    id: int
+    items: list[AddOrderItem]
+
+
+class OrderItemInfo(BaseModel):
+    name: str
+    quantity: int
+
+    class Config:
+        from_attributes = True
+        orm_mode = True
+
+
+class OrderInfo(BaseModel):
+    id: int
+    items: list[OrderItemInfo]
+
+    class Config:
+        from_attributes = True
+        orm_mode = True
