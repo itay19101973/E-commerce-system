@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Any
 
 from flask_jwt_extended import get_jwt_identity
 from sqlalchemy.exc import SQLAlchemyError
@@ -84,35 +84,66 @@ def get_user_orders(user_id: int) -> List[Dict]:
     return [order.to_dict() for order in orders]
 
 
-def update_quantities(order_items: List[OrderItem]):
+def update_quantities(order: Order) -> None:
+    """
+    Deducts quantities of products based on the given order's items.
+
+    Args:
+        order (Order): The order containing items whose quantities should be updated.
+
+    Raises:
+        ValueError: If requested quantity exceeds available product quantity.
+        BadRequest: If a database error occurs during update.
+    """
     try:
-        items = {}
+        order_items = [item for item in order.items]
         for item in order_items:
             product = Product.query.filter_by(id=item.product_id).first()
             if product.quantity >= item.quantity:
                 product.quantity -= item.quantity
-                quantity = item.quantity
             else:
-                quantity = product.quantity
-                product.quantity = 0
-
-            items[f"{product.name}"] = {"quantity": quantity, "unit_price": product.price}
+                raise ValueError(f"cant execute order, asked for {item.quantity} of {product.name} but storage has less.")
 
         db.session.commit()
-        return items
     except SQLAlchemyError as e:
         db.session.rollback()
         raise BadRequest("Database error occurred during order execution")
 
 
-def calculate_order_price(items_dict):
+def calculate_order_price(order: Order) -> float:
+    """
+    Calculates the total price for all items in the order.
+
+    Args:
+        order (Order): The order whose total price should be calculated.
+
+    Returns:
+        float: The total price calculated as sum of (unit_price * quantity) for all items.
+    """
+    order_items = [item for item in order.items]
     price = 0.0
-    for item in items_dict.values():
-        price += item["unit_price"] * item["quantity"]
+    for item in order_items:
+        price += item.unit_price * item.quantity
     return price
 
 
-def execute_order(order_id: int, user_id: int):
+def execute_order(order_id: int, user_id: int) -> Dict[str, Any]:
+    """
+    Executes an order by validating user ownership, checking execution status,
+    updating product quantities, calculating the price, and marking the order as executed.
+
+    Args:
+        order_id (int): The ID of the order to execute.
+        user_id (int): The ID of the user requesting the execution.
+
+    Returns:
+        Dict[str, Any]: A dictionary containing the executed order's item details and total price.
+
+    Raises:
+        ValueError: If the order does not exist or does not belong to the user.
+        BadRequest: If the order is already executed or a database error occurs.
+    """
+
     order = Order.query.filter_by(id=order_id).first()
     if not order:
         raise ValueError(f"no order found with id {order_id}")
@@ -125,10 +156,10 @@ def execute_order(order_id: int, user_id: int):
     order.executed = True
     db.session.commit()
 
+    update_quantities(order)
+    price = calculate_order_price(order)
+
     order_items = [item for item in order.items]
-    final_items = update_quantities(order_items)
-    price = calculate_order_price(final_items)
+    order_details = [{item.product.name: item.quantity} for item in order_items]
 
-    final_items = list(final_items.items())
-
-    return {"items": final_items, "price": price}
+    return {"items": order_details, "total_price": price}

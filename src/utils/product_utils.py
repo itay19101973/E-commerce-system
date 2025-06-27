@@ -31,5 +31,5 @@ def clean_product_data(df: pd.DataFrame, required_columns: List[str]) -> pd.Data
     df = df.dropna(subset=['quantity'])  # Remove rows with invalid quantities
     df['quantity'] = df['quantity'].astype(int)  # Convert to integer
     df['category'] = df['category'].astype(str)
-    df['price'] = df['price'].astype(int)
+    df['price'] = df['price'].astype(float)
     return df

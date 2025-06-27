@@ -24,4 +24,10 @@ class CreateOrder(BaseModel):
 
 
 class ExecuteOrder(BaseModel):
+    """
+    Represents a request to execute an order.
+
+    Attributes:
+        id (int): The ID of the order to be executed.
+    """
     id: int
