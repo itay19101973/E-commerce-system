@@ -213,3 +213,16 @@ def update_order(order_details: UpdateOrderInput, user_id: int):
     except SQLAlchemyError:
         db.session.rollback()
         raise BadRequest("Database error occurred during order update")
+
+
+def delete_order(order_id: int, user_id: int):
+    order = Order.query.filter_by(id=order_id).first()
+    if not order:
+        raise BadRequest(f"There is no order with id {order_id}")
+
+    if order.user_id != user_id:
+        raise BadRequest("User cannot delete orders that do not belong to them.")
+
+    db.session.delete(order)
+    db.session.commit()
+

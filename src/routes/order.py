@@ -5,8 +5,8 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from pydantic import ValidationError
 from werkzeug.exceptions import BadRequest
 
-from schemas.order import CreateOrder, ExecuteOrder, UpdateOrderInput
-from service.db.order_service import create_order, get_user_orders, execute_order, update_order
+from schemas.order import CreateOrder, ExecuteOrder, UpdateOrderInput, DeleteOrderInput
+from service.db.order_service import create_order, get_user_orders, execute_order, update_order, delete_order
 
 orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
@@ -28,6 +28,7 @@ def handle_create_order():
         order = CreateOrder(**request.json)
         new_order = create_order(order)
         return jsonify({"id": new_order.id}), http.HTTPStatus.CREATED
+
     except ValidationError as e:
         return jsonify({"errors": e.errors()}), http.HTTPStatus.BAD_REQUEST
 
@@ -54,7 +55,7 @@ def handle_get_user_order():
     try:
         orders = get_user_orders(user_id)
         return jsonify({"user": f"{user_id}", "orders": orders}), http.HTTPStatus.OK
-    except Exception as e:
+    except Exception:
         return jsonify({"error": f"failed to get orders for user {user_id}"})
 
 
@@ -68,13 +69,14 @@ def handle_execute_order():
         order_details = execute_order(order_id, user_id)
         return (jsonify({"msg": f"order {order_id} executed successfully.", "details": f"{order_details}"}),
                 http.HTTPStatus.OK)
+
     except ValidationError as ve:
         return jsonify({"error": ve.errors()}), http.HTTPStatus.BAD_REQUEST
     except BadRequest as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
     except ValueError as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
-    except Exception as e:
+    except Exception:
         return jsonify({"error": "cant execute order, try again later."}), http.HTTPStatus.INTERNAL_SERVER_ERROR
 
 
@@ -87,11 +89,29 @@ def handle_update_order():
         order_info = update_order(order_details, user_id)
         return (jsonify({"msg": f"order {order_details.id} updated successfully.", "details": order_info.dict()}),
                 http.HTTPStatus.OK)
+
     except ValidationError as ve:
         return jsonify({"error": ve.errors()}), http.HTTPStatus.BAD_REQUEST
     except BadRequest as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
     except ValueError as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
+    except Exception as e:
+        return jsonify({"error": str(e)}), http.HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@orders_bp.route('/delete', methods=['DELETE'])
+@jwt_required()
+def handle_delete_order():
+    try:
+        order_id = DeleteOrderInput(**request.json).id
+        user_id = int(get_jwt_identity())
+        delete_order(order_id, user_id)
+        return jsonify({"msg": f"order {order_id} deleted successfully."}), http.HTTPStatus.OK
+
+    except ValidationError as ve:
+        return jsonify({"error": ve.errors()}), http.HTTPStatus.BAD_REQUEST
+    except BadRequest as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.BAD_REQUEST
     except Exception as e:
         return jsonify({"error": str(e)}), http.HTTPStatus.INTERNAL_SERVER_ERROR
