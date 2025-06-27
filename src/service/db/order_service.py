@@ -1,3 +1,4 @@
+from typing import List, Dict
 
 from flask_jwt_extended import get_jwt_identity
 
@@ -65,3 +66,17 @@ def create_order(order: CreateOrder) -> Order:
 
     return new_order
 
+
+def get_user_orders(user_id: int) -> List[Dict]:
+    """
+    Retrieve all orders for a given user by user ID.
+
+    Args:
+        user_id (int): The ID of the user whose orders are to be retrieved.
+
+    Returns:
+        List[Dict]: A list of dictionaries, each representing an order associated with the user.
+                    Each dictionary contains serialized order data via the `to_dict()` method.
+    """
+    orders = Order.query.filter_by(user_id=user_id).all()
+    return [order.to_dict() for order in orders]

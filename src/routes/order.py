@@ -1,11 +1,11 @@
 import http
 
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from pydantic import ValidationError
 
 from schemas.order import CreateOrder
-from service.db.order_service import create_order
+from service.db.order_service import create_order, get_user_orders
 
 orders_bp = Blueprint('orders', __name__, url_prefix='/orders')
 
@@ -31,6 +31,27 @@ def handle_create_order():
         return jsonify({"errors": e.errors()}), http.HTTPStatus.BAD_REQUEST
 
 
+@orders_bp.route('/', methods=['GET'])
+@jwt_required()
+def handle_get_user_order():
+    """
+    Handle GET request to retrieve all orders for the authenticated user.
 
+    Requires:
+        A valid JWT token in the Authorization header.
 
+    Returns:
+        JSON response containing:
+            - "user": The authenticated user's ID.
+            - "orders": A list of the user's orders in dictionary format.
+        HTTP 200 OK on success.
 
+    Error Handling:
+        Returns JSON error message with a generic failure note if an exception occurs.
+    """
+    user_id = get_jwt_identity()
+    try:
+        orders = get_user_orders(user_id)
+        return jsonify({"user": f"{user_id}", "orders": orders}), http.HTTPStatus.OK
+    except Exception as e:
+        return jsonify({"error": f"failed to get orders for user{user_id}"})

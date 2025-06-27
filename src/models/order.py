@@ -40,11 +40,13 @@ class Order(db.Model):
 
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    executed = db.Column(db.Boolean, default=False)
 
     def to_dict(self):
         return {
             "id": self.id,
             "created_at": self.created_at.isoformat(),
+            "executed": self.executed,
             "items": [
                 {
                     "product_id": item.product_id,
