@@ -16,7 +16,7 @@ class OrderItem(db.Model):
         product (Product): Relationship to the Product model.
     """
     __tablename__ = 'order_item'
-    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id', ondelete='CASCADE'), primary_key=True)
     product_id = db.Column(db.Integer, db.ForeignKey('products.id'), primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
     unit_price = db.Column(db.Float, nullable=False)
@@ -38,7 +38,7 @@ class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan')
+    items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan', passive_deletes=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     executed = db.Column(db.Boolean, default=False)
 
