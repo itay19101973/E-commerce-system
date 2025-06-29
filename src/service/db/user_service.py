@@ -1,4 +1,4 @@
-
+from datetime import datetime
 from typing import Any, Dict, Optional
 
 
@@ -116,7 +116,7 @@ def update_user(input_data: UserUpdateInput) -> UpdatedUser:
         id=user.id,
         full_name=user.full_name,
         email=user.email,
-        updated_at=user.updated_at
+        updated_at=datetime.utcnow()
     )
 
 

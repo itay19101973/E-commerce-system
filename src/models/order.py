@@ -36,11 +36,13 @@ class Order(db.Model):
     """
     __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan', passive_deletes=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     executed = db.Column(db.Boolean, default=False)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     def to_dict(self):
         return {

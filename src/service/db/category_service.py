@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from models.category import Category
@@ -108,6 +109,7 @@ def update_category_name(current_category_name: str, new_category_name: str) -> 
         raise ValueError("invalid category name given, category to change wasn't found.")
 
     category.name = new_category_name
+    category.updated_at = datetime.utcnow()
     db.session.commit()
 
 

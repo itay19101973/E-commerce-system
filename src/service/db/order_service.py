@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List, Dict, Any
 
 from flask_jwt_extended import get_jwt_identity
@@ -207,6 +208,7 @@ def update_order(order_details: UpdateOrderInput, user_id: int) -> OrderInfo:
             OrderItemInfo(name=item.product.name, quantity=item.quantity)
             for item in updated_items
         ]
+        order.updated_at = datetime.utcnow()
 
         return OrderInfo(id=order.id, items=updated_items)
 

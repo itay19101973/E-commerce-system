@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pandas as pd
 
 from database import get_db_connection
@@ -159,6 +161,7 @@ def update_product(new_product_details: UpdateProduct) -> Product:
             db.session.flush()
         product.category_id = category.id
 
+    product.updated_at = datetime.utcnow()
     db.session.commit()
     return product
 

@@ -27,5 +27,8 @@ class Category(db.Model):
         passive_deletes=True
     )
 
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
     def __repr__(self):
         return f'<Category {self.name}>'

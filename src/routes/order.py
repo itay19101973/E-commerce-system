@@ -136,7 +136,7 @@ def handle_execute_order():
         return jsonify({"error": "cant execute order, try again later."}), http.HTTPStatus.INTERNAL_SERVER_ERROR
 
 
-@orders_bp.route('/update', methods=['POST'])
+@orders_bp.route('/update', methods=['PUT'])
 @jwt_required()
 def handle_update_order():
     """
