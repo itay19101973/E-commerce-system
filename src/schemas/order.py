@@ -85,3 +85,18 @@ class DeleteOrderInput(BaseModel):
         id (int): The ID of the order to delete.
     """
     id: int
+
+
+class SalesInfo(BaseModel):
+    """
+    Data model representing sales summary information.
+
+    Attributes:
+        number_of_executed_orders (int): The total number of orders marked as executed.
+        total_profit (float): The total profit calculated from all executed orders.
+    """
+    number_of_executed_orders: int
+    total_profit: float
+
+    class Config:
+        from_attributes = True

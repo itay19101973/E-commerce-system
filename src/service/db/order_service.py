@@ -9,7 +9,7 @@ from database import get_db_connection
 from models.order import Order, OrderItem
 
 from models.product import Product
-from schemas.order import AddOrderItem, CreateOrder, OrderItemInfo, OrderInfo, UpdateOrderInput
+from schemas.order import AddOrderItem, CreateOrder, OrderItemInfo, OrderInfo, UpdateOrderInput, SalesInfo
 
 db = get_db_connection()
 
@@ -242,3 +242,23 @@ def delete_order(order_id: int, user_id: int) -> None:
     db.session.delete(order)
     db.session.commit()
 
+
+def calculate_total_order_sales():
+    """
+    Calculate total profit and count of executed orders.
+
+    Queries the database for all orders marked as executed,
+    calculates the total profit using `calculate_order_price`,
+    and returns a `SalesInfo` Pydantic model.
+
+    Returns:
+        SalesInfo: A model containing:
+            - number_of_executed_orders (int): Count of executed orders.
+            - total_profit (float): Sum of profits from all executed orders.
+    """
+    executed_orders = Order.query.filter_by(executed=True).all()
+    total_profit = 0
+    for order in executed_orders:
+        total_profit += calculate_order_price(order)
+
+    return SalesInfo(number_of_executed_orders=len(executed_orders), total_profit=total_profit)
