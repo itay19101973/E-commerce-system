@@ -64,7 +64,6 @@ def handle_get_user_order():
     Returns:
         - HTTP 200 OK:
             {
-                "user": "<user_id>",
                 "orders": [
                     {
                         "id": int,

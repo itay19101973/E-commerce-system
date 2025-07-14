@@ -18,8 +18,10 @@ class CreateOrder(BaseModel):
     Schema for creating a new order.
 
     Attributes:
+        location: a string with country name
         items: A list of products and their quantities to be included in the order.
     """
+    location: str
     items: list[AddOrderItem]
 
 
@@ -43,6 +45,7 @@ class UpdateOrderInput(BaseModel):
     """
     id: int
     items: list[AddOrderItem]
+    location: str = None
 
 
 class OrderItemInfo(BaseModel):
@@ -71,6 +74,7 @@ class OrderInfo(BaseModel):
     """
     id: int
     items: list[OrderItemInfo]
+    location: str
 
     class Config:
         from_attributes = True

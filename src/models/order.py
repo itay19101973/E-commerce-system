@@ -40,6 +40,7 @@ class Order(db.Model):
     items = db.relationship('OrderItem', backref='order', cascade='all, delete-orphan', passive_deletes=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     executed = db.Column(db.Boolean, default=False)
+    location = db.Column(db.String, nullable=False)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

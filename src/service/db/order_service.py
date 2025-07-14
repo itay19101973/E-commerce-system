@@ -9,6 +9,7 @@ from database import get_db_connection
 from models.order import Order, OrderItem
 
 from models.product import Product
+from repository.countries import get_all_countries
 from schemas.order import AddOrderItem, CreateOrder, OrderItemInfo, OrderInfo, UpdateOrderInput, SalesInfo
 
 db = get_db_connection()
@@ -56,8 +57,11 @@ def create_order(order: CreateOrder) -> Order:
     """
     if len(order.items) == 0:
         raise ValueError("no items in order")
+    if order.location not in get_all_countries():
+        raise ValueError("we dont ship for this country or invalid country name.")
 
     new_order = Order(user_id=get_jwt_identity())
+    new_order.location = order.location
 
     db.session.add(new_order)
     db.session.flush()
@@ -148,10 +152,10 @@ def execute_order(order_id: int, user_id: int) -> Dict[str, Any]:
 
     order = Order.query.filter_by(id=order_id).first()
     if not order:
-        raise ValueError(f"no order found with id {order_id}")
+        raise BadRequest(f"no order found with id {order_id}")
 
     if order.user_id != user_id:
-        raise ValueError("User cannot execute orders that do not belong to them.")
+        raise BadRequest("User cannot execute orders that do not belong to them.")
 
     if order.executed:
         raise BadRequest("This order has already been executed.")
@@ -195,6 +199,10 @@ def update_order(order_details: UpdateOrderInput, user_id: int) -> OrderInfo:
         raise BadRequest("cant update order that already executed.")
 
     try:
+        if order_details.location and order_details.location in get_all_countries():
+            order.location = order_details.location
+        else:
+            raise BadRequest("we dont ship for this country or invalid country name")
 
         OrderItem.query.filter_by(order_id=order_details.id).delete()
 
@@ -210,7 +218,7 @@ def update_order(order_details: UpdateOrderInput, user_id: int) -> OrderInfo:
         ]
         order.updated_at = datetime.utcnow()
 
-        return OrderInfo(id=order.id, items=updated_items)
+        return OrderInfo(id=order.id, items=updated_items, location=order.location)
 
     except SQLAlchemyError:
         db.session.rollback()
